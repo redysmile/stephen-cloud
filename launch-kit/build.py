@@ -1,0 +1,412 @@
+from pathlib import Path
+import json
+import html
+import zipfile
+
+ROOT = Path(__file__).resolve().parent
+WP = 'https://github.com/redysmile/stephen-cloud/blob/main/TAPEBIT-WHITEPAPER-v0.6-zh.pdf'
+
+def day(i, phase, title, goal, hook, posts, evening, art, nodes, caption, shots, tasks, checks, metric, **extra):
+    return dict(id=i, phase=phase, title=title, goal=goal, hook=hook, posts=posts, evening=evening,
+                art=art, nodes=nodes, caption=caption, shots=shots, tasks=tasks,
+                checks=checks, metric=metric, **extra)
+
+DAYS = [
+day(0,'预热','电路设计，成为 Bitcoin 上的资产','让第一次看到账号的人理解产品，并找到正式资料。',
+    '一张图解释 TAPEBIT：设计、验证、资产与应用。',[
+    '1/3 TAPEBIT 正在把可执行电路设计变成 Bitcoin 上可持有、可转让的资产。\n\n设计电路 → 验证解题 → 流片上链 → 参与 TAPEBIT 协议奖励分配。\n\n这里记录产品演示、开发进度与公开验证。',
+    '2/3 TAPEBIT 受 TapeOut 启发，是独立项目。\n\n设计挖矿分配的是 TAPEBIT，不产出 BTC，也不替代 Bitcoin PoW。Bitcoin 验证交易，协议客户端额外验证电路与奖励规则。',
+    '3/3 第一阶段：公共测试。\n\n我们先把选题、设计、验证与流片这条路径跑清楚，再逐步展示市场、容器与 BitWeb。\n\n当前规则见白皮书：\n【白皮书】'
+    ],
+    '一个边界先说清：Bitcoin 交易确认，不等于 TAPEBIT 业务有效。\n\n除了链上确认，还要检查协议是否执行成功。后续教程会把这两个状态分开展示。',
+    '资产路径概念图：用四个节点讲清产品。图底固定注明“机制示意，不是产品运行截图”。',
+    ['电路设计','验证解题','流片资产','连接应用'],
+    'Proof of Design · 设计挖矿奖励为 TAPEBIT，不是 BTC',
+    ['0–3 秒：标题“电路设计，也能成为资产”。','3–8 秒：NAND/LATCH 图形组成网表；标“概念示意”。','8–14 秒：网表→验证→资产，逐个点亮四节点。','14–18 秒：定格“Bitcoin 上的电路设计资产”，不出现价格曲线。'],
+    ['10:00：统一 X、GitHub、正式入口的固定匿名标识。','18:00：完成简介、入口页和图卡。','20:30：依次发布 3 条线程，将首帖置顶。','22:00：发布边界说明，集中回答公开问题。'],
+    ['不放个人经历或真实身份；不私信邀约。','没有正式合作时，不写 TapeOut 官方版、合作方或跨链联动。','图卡表达机制，不冒充链上运行证据。'],
+    '观察主页访问和白皮书访问；从 D3 起统计完整测试路径。'),
+day(1,'预热','第一片电路，完整走一遍','用真实屏幕操作证明用户路径，降低理解成本。',
+    '从选题到链上结果，保留每一个状态。',[
+    '1/3 一片电路如何进入 TAPEBIT？\n\n选题 → 设计或导入网表 → 校验向量 → 核对资源与费用 → 签名流片 → 等待确认与协议执行。\n\n这段录屏展示当前测试实例的实际流程。',
+    '2/3 视频中的确认等待已剪辑压缩，实际耗时随区块与网络情况变化。\n\n“已签名”“已广播”“Bitcoin 已确认”“协议执行成功”是不同状态，不用一个成功弹窗代替它们。',
+    '3/3 当前录屏环境：\n网络／实例：【公测实例】\n钱包：【支持钱包】\n\n步骤和费用说明：\n【教程链接】\n\n测试资产不自动迁移或兑换主网资产。'
+    ],
+    'TAPEBIT 入门不要求先成为电路专家。可以从公开参考设计理解流程，再尝试改进。\n\n参考和复用设计不能据此取得原创首创资格；AI 生成结果也需要独立校验。',
+    '主素材用真实测试网屏幕录制。封面使用路径图；不要把概念图当作演示视频。',
+    ['选择题目','校验网表','签名流片','检查结果'],
+    'DEMO COVER · 正片使用实际录屏，等待剪辑需标明',
+    ['0–8 秒：显示网络、实例、题号与录制日期。','8–25 秒：导入公开参考，展示门数、验证和费用。','25–45 秒：实际签名流程；遮挡无关资料，保留状态标签。','45–75 秒：跳切到确认与协议结果，持续标注“等待已压缩”；结尾显示可核验链接。'],
+    ['10:00：在实际支持的钱包和网络上重走流程。','16:00：录屏并检查匿名信息，补上等待剪辑说明。','20:30：发布视频＋3 条线程。','22:00：发布参考设计说明，整理公开提问。'],
+    ['只有实际录制并核对后才发布主线程。','检查桌面用户名、通知、书签、路径、salt 和已签恢复数据。','没有录好时使用下方替代稿，不虚构演示。'],
+    '记录视频带来的教程访问和最常被问到的一个步骤。',
+    gate='已完成真实录屏，网络、钱包和最终结果均核对。',
+    fallback=['TAPEBIT 的首条公开教程正在整理。\n\n内容会覆盖选题、网表校验、费用、签名，以及链上确认与协议执行的区别。\n\n演示以实际录屏为准，完成后公开发布；当前规则可先查阅：\n【白皮书】']),
+day(2,'预热','六轮内测，具体验证了什么','把内测次数转化成可检查的信息。',
+    '公开测试范围、重要修复和未完成项。',[
+    '1/3 TAPEBIT 已完成六轮内部测试。\n\n次数本身不能说明覆盖程度。这次公开三项信息：测过什么、修复什么、还有什么未验收。\n\n测试摘要：\n【测试报告】',
+    '2/3 本轮记录：\n覆盖：【内测覆盖】\n修复：【内测修复】\n待验收：【待验收项】\n\n内部通过不等于外部环境、真实钱包与独立运营者都已验证。',
+    '3/3 公测目标窗口：【公测日期】。\n\n开放前会公布实际实例、钱包要求、测试币获取方式及奖励窗口。TEST003 的原奖励窗口已经结束，不会将历史发行展示为新奖励。'
+    ],
+    '主网目标窗口：【主网日期】。\n\n正式上线以公开验收结论为准，包括钱包兼容、资产守恒、恢复演练与独立运营者重放。\n\n若有阻塞项，会公开原因和下一次更新时间。',
+    '三栏测试板：已覆盖／已修复／待验收。用真实条目替换摘要，禁止装饰性全绿打勾。',
+    ['测试范围','修复记录','待验收项','公开证据'],
+    'TEST NOTES · 内测次数不等于发布验收',
+    ['0–3 秒：六轮内测标题。','3–8 秒：出现一个实际问题及其影响。','8–14 秒：展示修复前后可复现结果。','14–20 秒：停留在尚未验收列表与报告入口，不使用“全部完成”。'],
+    ['10:00：整理现有报告，不补造历史测试记录。','17:00：为每个摘要添加版本、日期和结果链接。','20:30：发布测试摘要线程。','22:00：发布主网目标与验收原则。'],
+    ['报告区分通过、失败、跳过和未执行。','没有审计报告不写已审计；内部测试不写独立验收。','日期只是目标；确认当前公测实例的奖励状态。'],
+    '记录报告访问和针对规则、钱包、恢复的具体问题。'),
+day(3,'公测','公共测试网开放','让用户自主完成第一片电路。',
+    '一个入口，一个主任务：完成首片电路。',[
+    '1/4 TAPEBIT 公共测试网已开放。\n\n这次只需完成一个主任务：从选题开始，跑通自己的第一片电路。\n\n入口：\n【公测入口】',
+    '2/4 开始前确认：\n网络／实例：【公测实例】\n支持钱包：【支持钱包】\n测试币：【测试币入口】\n奖励窗口：【奖励安排】\n\n测试资产不自动迁移或兑换主网资产。',
+    '3/4 路径：取得资源 → 选题或导入 → 校验 → 核对费用 → 签名 → 等待确认与协议执行。\n\n教程：\n【教程链接】\n\n规则、已知问题与服务状态：\n【状态页】',
+    '4/4 如果卡住，请记录：发生步骤、预期结果、实际结果、网络和版本。\n\n反馈入口：\n【反馈入口】\n\n不要提交私钥、salt、助记词或已签恢复数据。交易标识仅在愿意公开时提供。'
+    ],
+    'TAPEBIT 公测今日状态已更新：\n【状态页】\n\n已广播不等于已确认，已确认不等于协议业务成功。遇到长时间等待，先查当前阶段与已知问题，再决定下一步操作。',
+    '开放公告图：清晰标 PUBLIC TESTNET，附实际网络、实例短标识与入口。概念图下载后不能代替这些必填信息。',
+    ['准备钱包','获取资源','完成流片','核验结果'],
+    'PUBLIC TESTNET · 测试资产无主网兑换权',
+    ['0–4 秒：公共测试网标识＋网络。','4–10 秒：实际首页入口与钱包连接。','10–20 秒：实际流程三个关键画面。','20–25 秒：入口、教程和“测试资产无主网兑换权”定格。'],
+    ['10:00：核对入口、测试币、奖励窗口和支持钱包。','12:00：完整外部访问自检，更新状态页。','20:30：发布开放线程，并将正式入口置顶。','20:30–22:00：集中支持；22:00 发布状态补充。'],
+    ['公测入口已可访问且实例明确，才使用“已开放”。','TEST003 旧奖励窗口已结束；新实例与新窗口必须明确披露。','不承诺测试币兑换、空投或主网迁移。'],
+    '统计教程访问、开始测试、完成首片电路及退出原因；地址数不当作人数。',
+    gate='公测实际可用；实例、钱包、测试币和奖励窗口已核对。',
+    fallback=['TAPEBIT 公测原目标窗口为【公测日期】，目前暂未开放。\n\n阻塞项：【公测阻塞项】\n下一次更新：【下次更新时间】\n\n在正式入口与实例公布前，请勿将其他站点视为官方测试入口。',
+    '公测准备状态与已知问题：\n【状态页】\n\n当前说明以实际测试结果为准。开放时会一并公布网络、钱包要求、测试币方式与奖励窗口。']),
+day(4,'公测','第一天反馈，如何进入修复','用真实反馈展示迭代能力，不预填增长成绩。',
+    '把卡点、改动和复测放在同一张记录里。',[
+    '1/3 TAPEBIT 公测首日记录：\n统计区间：【统计区间】\n完成首片电路：【首片完成数据】\n收到有效问题：【有效问题数据】\n\n口径与详情：\n【测试报告】',
+    '2/3 当前最主要的卡点：\n【主要卡点】\n\n处理状态：【修复状态】\n\n我们会分别记录已定位、已修复、已复测，不把提交补丁等同于问题解决。',
+    '3/3 如果你停在某一步，可以先查更新后的教程与已知问题。\n\n教程：\n【教程链接】\n问题状态：\n【状态页】\n\n公开展示反馈与署名之前，会先征得提交者同意。'
+    ],
+    '今天的一项产品记录：\n问题：【复盘问题】\n预期：【预期行为】\n实际：【实际行为】\n当前结论：【复盘结论】\n\n复现条件与后续处理：\n【测试报告】',
+    '问题记录卡：一项真实问题，三栏“现象／处理／复测”。统计截图注明区间与口径，样本少也如实展示。',
+    ['用户卡点','定位原因','修复状态','复测结果'],
+    'PUBLIC FEEDBACK · 记录事实，不预填成绩',
+    ['0–4 秒：实际卡点和错误状态。','4–10 秒：解释影响及适用版本。','10–18 秒：若已修复，录制复测；未修复则展示当前调查状态。','18–24 秒：状态页与下一步，不使用无证据的成功动画。'],
+    ['10:00：汇总前一日记录，去重并标明统计区间。','15:00：优先处理阻断首片电路的卡点。','20:30：发布首日复盘。','22:00：发布一个问题记录，更新 FAQ。'],
+    ['只有公测实际运行后才发布首日数据。','完成数据说明是钱包数、会话数还是自愿登记测试者数。','参与者署名、截图与钱包信息经过同意。'],
+    '重点看首片完成率与最大退出点；无数据就标未统计。',
+    gate='公测已经运行，统计数据与问题记录均有来源。',
+    fallback=['TAPEBIT 公测准备更新：\n当前阻塞：【公测阻塞项】\n下一次状态更新：【下次更新时间】\n\n首日用户数据将在实际开放并完成统计后公布。当前进度：\n【状态页】']),
+day(5,'公测','一题，两种设计','让优化过程成为公开讨论与自主参与的理由。',
+    '门更少，成本就一定更低吗？',[
+    '1/3 TAPEBIT 设计挑战：同一道题，能否做出成本更低的电路？\n\n题目：【挑战题目】\n规则与参考：\n【挑战链接】\n\n先通过功能验证，再比较同版本下的设计成本。',
+    '2/3 当前成本规则：\n面积 A = NAND 数 + 7 × LATCH 数\n成本 C = A × max(d, 1)³\n\n门更少，不一定成本更低。输出路径深度也会显著影响结果。具体定义以当前实例规则为准。',
+    '3/3 若要竞争首创资格，请先按规则处理可选存证与兑现，再公开网表。\n\n先发到 X 再补登记，可能失去资格。参考和复用设计不据此取得首创资格。\n\n参与方式：\n【挑战链接】'
+    ],
+    '一个纯公式示例：\nA=100、d=4，C=6400；\nA=120、d=3，C=3240。\n\n这是解释成本函数的假设数字，不是实际题目成绩，也不代表挖矿收益。',
+    '左右对比公式卡。左 100×4³=6400；右 120×3³=3240。明显标注“假设示例／非真实题目结果”。',
+    ['同一道题','功能验证','面积与深度','成本比较'],
+    'FORMULA EXAMPLE · 假设数字，不是成绩或收益',
+    ['0–4 秒：问题“门更少，成本更低？”','4–10 秒：左侧显示假设面积与深度。','10–16 秒：右侧显示另一组假设值，逐项代入公式。','16–22 秒：标示3240＜6400；底部全程保留“公式示例”。'],
+    ['10:00：选一题，确认题号、参考与版本一致。','16:00：公布参与、有效提交、原创与展示规则；未定奖励不承诺奖励。','20:30：发布挑战线程。','22:00：发布公式示例，不晒单、不贴收益。'],
+    ['挑战题目、链接与提交规则实际存在。','不要求先公开参赛网表再进行原创存证。','挑战活动如有额外奖励，须另行公布预算和发放条件。'],
+    '统计有效设计、真实改进与可复现比较；不按转发数量排名。',
+    gate='挑战规则、参考设计、提交与展示方式已公开。',
+    fallback=['为什么减少门数，不一定降低 TAPEBIT 的设计成本？\n\n当前规则同时计入面积与输出路径深度，深度以三次方影响成本。\n\n我们会用同题对比解释这项取舍。规则说明：\n【白皮书】']),
+day(6,'主网窗口','公开 Go / No-Go 结论','在目标日前给出可检查的上线判断。',
+    '上线判断，看验收，不看倒计时。',[
+    '1/3 TAPEBIT 主网上线检查：\n目标窗口：【主网日期】\n当前判断：【发布判断】\n\n验收报告：\n【验收报告】\n\n判断基于实际证据，未完成项会单独列出。',
+    '2/3 发布前重点核对：\n创世与规则冻结、主网题库数据、供应守恒、原创并发、市场竞态、奖励继承、真实钱包、恢复演练与独立运营者重放。\n\n逐项结果见验收报告。',
+    '3/3 发行何时开始也要提前明确。\n\n规则是首个合格流片确认后，从下一块开始计奖。\n首发安排：【起挖安排】\n\n费用、收款脚本、服务与退款条款：\n【发布清单】'
+    ],
+    '主网发布状态：\n【状态页】\n\n如果目标窗口调整，会说明阻塞项与下一次更新时间。主网入口、创世和规则清单以正式发布记录为准。',
+    '验收矩阵：条目、结果、证据。结果用通过／失败／未执行，不做装饰性进度百分比。',
+    ['冻结规则','回归与恢复','独立重放','发布判断'],
+    'GO / NO-GO · 以实际验收为准',
+    ['0–4 秒：目标日期与“验收判断”。','4–12 秒：依次出现真实验收条目及证据入口。','12–18 秒：突出未完成项，避免全部绿色的模板。','18–24 秒：展示最终判断与下一次更新时间。'],
+    ['10:00：汇总实际验收结果与证据。','16:00：确认起挖安排、地址、费用和退款条款。','20:30：发布判断线程；条件不足选延期稿。','22:00：将状态页和置顶入口保持一致。'],
+    ['白皮书没有授权主网广播；只有实际发布决策才能写 Go。','同机两个实现不能写成独立运营者验收。','披露官方验证性流片是否提前触发发行及其处理安排。'],
+    '衡量验收证据是否完整，关键疑问是否得到明确答复。',
+    gate='发布判断、验收报告和首发起挖安排已确认。',
+    fallback=['TAPEBIT 主网发布判断：No-Go。\n\n原目标窗口：【主网日期】\n当前阻塞：【主网阻塞项】\n下一次更新：【下次更新时间】\n\n已完成项与未完成项：\n【验收报告】',
+    '目标日期不会替代验收。未解决的主网阻塞项会继续公开更新。\n\n当前服务与发布状态：\n【状态页】\n\n后续以新的验收结果决定正式时间。']),
+day(7,'主网窗口','主网发布，给出事实','用创世、规则和真实可用入口宣布上线。',
+    '发布记录先于口号。',[
+    '1/4 TAPEBIT 已部署至 Bitcoin 主网。\n\n正式入口：\n【主网入口】\n\n创世交易：\n【主网创世链接】\n\n请先核对网络、规则与费用，再进行签名操作。',
+    '2/4 本次发布的规则与验收记录：\n【发布清单】\n\n包含规则版本、题库、处理器资格、费用与收款脚本、服务边界及已知问题。\n\n测试资产不自动迁移或兑换主网资产。',
+    '3/4 发行状态：【实际起挖状态】\n\n起挖按首个合格流片确认高度的下一块执行，不按推文发布时间执行。\n\n可核验记录：\n【起挖证据链接】\n\n设计挖矿分配 TAPEBIT，不产出 BTC。',
+    '4/4 首次操作教程：\n【教程链接】\n\n费用包含资源款、协议费、必要载体金额与实际矿工费，按操作分别核对。\n\n服务状态与已知问题：\n【状态页】'
+    ],
+    'TAPEBIT 主网上线后的状态更新已发布。\n\n业务是否成功，请同时核对 Bitcoin 确认和协议执行结果。未完成交易先查恢复说明与当前状态。\n\n【状态页】',
+    '主网发布图：MAINNET、版本、已确认创世短标识、正式域名。只有部署确认并验收后使用“已上线”。',
+    ['主网创世','冻结规则','正式入口','可核验状态'],
+    'MAINNET RELEASE · 仅在实际部署并核验后发布',
+    ['0–4 秒：真实网络与版本，出现 MAINNET。','4–12 秒：展示已确认创世和可核验来源。','12–20 秒：实际入口与一次已完成业务，标注录制时间。','20–26 秒：费用、状态页和已知问题入口定格。'],
+    ['10:00：再次核对 Go/No-Go，未通过不发布上线稿。','发布前：核验创世确认、实际入口、规则、收费和起挖状态。','20:30：确认全部条件后发布线程，更新置顶。','22:00：发布状态补充；如故障切换事件稿。'],
+    ['不是仅广播交易；已确认部署与协议状态均核对。','没有主网入口或创世证据，不用概念图宣布上线。','尚未起挖就写尚未起挖，不填写预测高度当事实。'],
+    '统计主网业务完成与错误类型；交易量、钱包数和用户数分别记录。',
+    gate='主网部署及确认、验收、入口与实际起挖状态已核验。',
+    fallback=['TAPEBIT 主网今日暂不上线。\n\n当前阻塞：【主网阻塞项】\n下一次更新：【下次更新时间】\n\n我们会继续公开验收结果，正式发布以新的发布清单为准。\n【状态页】',
+    '主网延期不改变已公布的测试资产规则：测试币、测试资源和测试电路不自动迁移或兑换主网资产。\n\n后续状态：\n【状态页】']),
+day(8,'持续运营','一片真实电路的完整档案','用真实作品展示资产生命周期。',
+    '它解决什么题，谁能核验，当前是什么状态？',[
+    '1/3 今天记录一片实际电路。\n\n网络／实例：【案例实例】\n题目：【案例题目】\n稳定资产 ID：【案例资产ID】\n\n验证与链上记录：\n【案例链接】',
+    '2/3 这片电路的数据：\n门数：【案例门数】\n深度：【案例深度】\n成本：【案例成本】\n当前验证／席位状态：【案例状态】\n\n数据对应【案例快照时间】，状态可能随后变化。',
+    '3/3 一个案例只能证明其记录和当时状态。当前最优不代表全球最优，也不保证永久在席。\n\n如何查看自己的电路：\n【教程链接】'
+    ],
+    '电路的稳定资产 ID 与当前控制 UTXO 是两件事。\n\n转让会改变控制载体，不会因此创建一片新的稳定身份电路。展示编号也不应与稳定资产 ID 混用。\n\n规则：\n【白皮书】',
+    '真实电路档案卡：网络、题号、门数、深度、成本、快照时间。作者与地址只有经同意才展示。',
+    ['题目规格','真实网表','验证结果','资产记录'],
+    'CIRCUIT CASE · 标明网络、实例与快照时间',
+    ['0–5 秒：实际电路图与题号。','5–12 秒：真实门数、深度与成本。','12–20 秒：对应验证与资产记录，隐去无关信息。','20–25 秒：说明快照时间与当前席位并非永久保证。'],
+    ['10:00：选择可公开的真实案例并核对数据。','16:00：取得署名与展示许可；自有测试案例如实标注。','20:30：发布案例线程。','22:00：解释稳定 ID 与控制 UTXO。'],
+    ['无可公开案例时选下方机制稿，不编造首位用户。','明确主网或测试网，不混合两者的成绩。','未领取余额不当作固定收益或可兑现利润展示。'],
+    '观察案例是否带来完整教程访问、有效问题和再次设计。',
+    gate='案例、网络与快照数据真实且可公开。',
+    fallback=['一片 TAPEBIT 电路的档案，应该让别人核对什么？\n\n网络与实例、题目、规范网表、门数、深度、成本、验证状态，以及对应资产记录。\n\n案例将以实际可核验数据发布。规则：\n【白皮书】']),
+day(9,'持续运营','签名前，把费用看清楚','减少成本误解与错误签名。',
+    '资源款、协议费、载体和矿工费，各是什么？',[
+    '1/3 在 TAPEBIT 操作前，先把费用分开看：\n资源款、协议费、必要载体金额、Bitcoin 矿工费。\n\n载体金额保留在用户控制输出中，不能全部当作平台收费。',
+    '2/3 白皮书中的计算示例：铸造 1,000 个初始官方晶体管，本金 0.001 BTC，铸造协议费 0.00001 BTC，合计 0.00101 BTC。\n\n这不含必要输出与网络费；实际签名前仍需核对实例与报价。',
+    '3/3 Commit/Reveal 通常是两笔 Bitcoin 交易。一个产品入口，不代表一笔交易或永远只需一次签名。\n\n当前钱包与费用说明：\n【教程链接】'
+    ],
+    '低数量不代表手续费按比例更低。\n\n部分协议费设有最低值，小额操作的实际费率可能高于 1%。矿工费另按交易体积与网络费率计算。\n\n每次签名前，核对总额与收款信息。',
+    '四项费用分解卡，不用饼图虚构比例。数字示例必须标“白皮书算例／另加输出与网络费”。',
+    ['资源本金','协议费用','载体金额','矿工费用'],
+    'FEE GUIDE · 按操作、实例与签名前预览核对',
+    ['0–4 秒：问题“我到底付了哪些费用？”','4–14 秒：四项费用依次出现，载体单独标注。','14–22 秒：展示白皮书算例，不加入实时币价。','22–28 秒：真实签名前预览截图，遮挡无关资料。'],
+    ['10:00：核对当前实例与白皮书费用是否一致。','17:00：制作四项费用卡。','20:30：发布费用线程。','22:00：解释小额最低费，更新 FAQ。'],
+    ['算例不是实时网络费报价。','如果当前规则变更，先更新算例与来源。','不承诺固定美元成本、回本周期或收益率。'],
+    '观察费用误解是否减少，记录重复问题，不以铸造额作为唯一指标。'),
+day(10,'持续运营','原创存证，保护的是什么','解释字节级来源与兑现窗口，避免误操作。',
+    '存证、原创、首创席位，是不同判断。',[
+    '1/3 TAPEBIT 的原创存证，识别本实例内完全相同的规范 TBV1 网表字节及其来源。\n\n它不是专利认证，也不证明人类意义上的首个发明，更不覆盖所有功能等价电路。',
+    '2/3 原创登记是可选项，默认不勾选。\n\n不登记也能按规则流片和验证；但不能因此竞争需要有效首创资格的席位。参考和已公开的相同网表不能靠新登记获得首创资格。',
+    '3/3 存证确认于 H，兑现窗口为 H+1 至 H+12，含两端。\n\n按区块高度计算，不是固定两小时。仅签名或广播不等于按时兑现。\n\n具体条件：\n【白皮书】'
+    ],
+    '如果计划竞争首创资格，不要先把网表公开到 X 再补登记。\n\n存证成功也不保证最终取得席位，仍需满足验证、来源、成本和其他规则。请保管好非公开 salt 与恢复资料。',
+    '区块窗口时间线：H 存证确认；H+1…H+12 允许兑现；H+13 过期。不要画成现实时间倒计时。',
+    ['H 存证确认','H+1 起兑现','至 H+12','H+13 过期'],
+    'BLOCK WINDOW · 按高度，不是固定两小时',
+    ['0–4 秒：说明“可选原创存证”。','4–14 秒：区块格依次点亮 H、H+1…H+12。','14–20 秒：H+13 标过期，强调确认而非广播。','20–26 秒：出现“字节级来源≠专利／全球原创证明”。'],
+    ['10:00：检查教程与页面是否准确说明可选登记。','17:00：制作区块窗口图。','20:30：发布原创边界线程。','22:00：补充公开顺序与资料保管。'],
+    ['不写登记即可保护全部等价设计。','不把12块保证成2小时。','图中不出现真实用户的 salt 或恢复数据。'],
+    '记录用户能否区分存证、验证、首创资格与当前在席。'),
+day(11,'持续运营','通过测试，为什么还需要反例','解释有限向量验证与纠错机制。',
+    '通过官方向量，不等于对所有输入都正确。',[
+    '1/3 电路通过官方测试向量，不代表已经对所有可能输入完成数学证明。\n\nTAPEBIT 保留反例审查：同样的合法输入或时序下，参考与候选电路出现不同输出，可以形成反例。',
+    '2/3 一般有效反例可能使设计失去首创席位与加成；按当前规则，基础挖矿资格与已结算奖励有各自处理边界。\n\n另有针对官方固定向量不符的挑战路径，不能混为一种处罚。',
+    '3/3 反例登记、撤席和后续席位恢复是可区分的协议事实。\n\n检查结果时，要看处置是否实际完成，不能只看“反例已提交”。\n\n完整规则：\n【白皮书】'
+    ],
+    '“Proof of Design”在 TAPEBIT 中是应用层奖励分配机制。\n\n它不等于每片电路都获得形式化正确性证明，也不改变 Bitcoin 的共识规则。术语应由实际验证范围解释。',
+    '两条电路路径输入相同向量，输出位置标出差异。没有真实反例时明确标“机制示意”。',
+    ['同样输入','参考电路','候选电路','比较输出'],
+    'COUNTEREXAMPLE · 示意不代表某片真实电路被处罚',
+    ['0–4 秒：同一个输入分到两条路径。','4–12 秒：参考与候选执行；差异输出用橙色提示。','12–20 秒：分别出现登记、撤席、恢复三个状态。','20–26 秒：标明示意和实际规则来源。'],
+    ['10:00：核对反例与固定向量挑战的区别。','17:00：制作机制示意，不捏造真实处罚。','20:30：发布反例线程。','22:00：解释 PoD 与形式化证明的区别。'],
+    ['一般反例不写成所有收益没收或自动退池。','不能为录制演示伪造有效挑战。','没有实测案例就使用概念动画并标注。'],
+    '看是否减少对“验证通过即绝对正确”的误解。'),
+day(12,'持续运营','转让电路，哪些权益随之变化','解释市场、未领取余额与容器的控制关系。',
+    '所有权转移，不只是换一张图片。',[
+    '1/3 转让 TAPEBIT 电路，会移交当前控制权益。\n\n未领取挖矿余额随电路转给新持有人；已领取到原钱包的代币不会随电路转移。\n\n交易前要分别查看这两种余额。',
+    '2/3 电路容器是协议资产账户，不是独立私钥 BTC 钱包。\n\n当前规则支持 NAND、LATCH、TAPEBIT，不接收 BTC。容器余额与控制权随电路转让，原作者记录保持不变。',
+    '3/3 市场当前采用单向卖单、整单成交。\n\n隐藏订单或关闭网页不等于有效撤单；撤单须经链上花费与确认，让旧出售签名失效。\n\n市场与容器规则：\n【白皮书】'
+    ],
+    '领取挖矿收益，不要求先开通电路容器。\n\n容器未开通也可能收到协议资产，但提取需要按规则开通。转入前先核对目标电路、控制者与费用，别把容器当作 BTC 收款地址。',
+    '控制关系图：电路→当前持有人；旁列未领取奖励、容器余额；单列“已领取代币不随转”。不要展示 BTC 入容器箭头。',
+    ['电路资产','新持有人','未领取奖励','容器控制权'],
+    'OWNERSHIP · 已领取代币不随电路转移',
+    ['0–5 秒：电路与原持有人关系。','5–13 秒：转让后控制箭头指向新持有人。','13–20 秒：未领取奖励与容器控制一同移动，已领取代币留在原钱包。','20–27 秒：标示“不接收 BTC”“作者记录不变”。'],
+    ['10:00：核对教程中的奖励与容器余额区分。','17:00：制作控制关系图。','20:30：发布转让与市场线程。','22:00：补充容器开通与领取边界。'],
+    ['不把容器称为可收 BTC 的智能合约钱包。','不把删报价、页面关闭写成链上撤单。','实际交易演示未准备好时只发规则图。'],
+    '收集转让、撤单和两种余额的常见理解错误。'),
+day(13,'持续运营','BitWeb，哪些上链，哪些存储','展示应用方向，准确说明数据与运行边界。',
+    'Bitcoin 上的发布凭证，内容寻址的网站文件。',[
+    '1/3 BitWeb 把电路控制权与网站发布联系起来。\n\nBitcoin 记录 CID、清单哈希、版本关系与控制授权；网站静态文件按内容寻址保存。\n\n它不表示整站文件永久写入 Bitcoin。',
+    '2/3 HTML、CSS、JavaScript 等静态资源可以作为发布内容；React/Vue 使用构建后的静态产物。\n\nBitcoin 节点不会因此执行 JavaScript，Node、PHP 或数据库后端也不会直接在 Bitcoin 上运行。',
+    '3/3 内容哈希帮助验证文件一致性，不自动保证长期可用。\n\n文件保存、备份、pin 与网关仍需安排。\n\n当前发布与服务边界：\n【白皮书】'
+    ],
+    'BitWeb 结构示意：\n电路控制权 → 链上发布记录 → 内容寻址文件 → 网关访问。\n\n访问网关与保存内容仍是服务环节。电路名称也不是普通浏览器无需网关就能解析的 Bitcoin 原生 DNS。',
+    '分层架构图：Bitcoin 发布凭证／内容存储／网关与浏览器。用清晰箭头，不画成所有文件都在 BTC 区块内。',
+    ['电路授权','链上发布记录','内容存储','网关访问'],
+    'BITWEB · 发布凭证上链，文件使用内容存储',
+    ['0–5 秒：一个真实或明确标注的静态页面。','5–13 秒：展开链上凭证与链下文件两层。','13–21 秒：显示 CID 校验和网关访问路径。','21–28 秒：强调一致性与可用性不同；真实发布演示须附网络与记录。'],
+    ['10:00：核对当前 BitWeb 验收状态。','17:00：完成分层图；若有实测发布，再补实际录屏。','20:30：发布架构线程。','22:00：补充网关、保存和解析边界。'],
+    ['未验收的网关套餐不写成已收费运营。','本机双副本不写成全球分布式存储。','没有已部署实例则只说架构与规则，不写现已可用。'],
+    '记录实际应用需求；有真实发布时再统计成功发布与读取。'),
+day(14,'持续运营','两周公开记录与下一步','将阶段传播沉淀为可追踪的开发节奏。',
+    '完成、未完成、下一步，放在同一份周报。',[
+    '1/3 TAPEBIT 阶段周报。\n\n统计区间：【周报区间】\n当前发布状态：【当前发布状态】\n完整记录：\n【周报链接】\n\n测试网与主网数据分开列示。',
+    '2/3 本期完成：【周报完成项】\n仍未解决：【周报未完成项】\n下一阶段优先：【下阶段任务】\n\n数据口径与证据随周报公开；交易数、钱包数和参与者数分别记录。',
+    '3/3 接下来继续三件事：\n公开可复现的电路案例；\n修复阻断参与的产品问题；\n更新规则解释与验证证据。\n\n后续状态：\n【状态页】'
+    ],
+    'TAPEBIT 下一阶段计划已更新：\n【周报链接】\n\n设计挑战按实际规则继续，产品发布按实际验收推进。感谢公开问题与可复现反馈；展示贡献者信息前会征求同意。',
+    '阶段周报卡：实际发布状态、完成项、未解决项、下一步。没有来源的数据留空或写未统计，不配虚构增长曲线。',
+    ['已完成','未解决','公开证据','下一阶段'],
+    'BUILD LOG · 统计区间与口径随报告披露',
+    ['0–5 秒：统计区间和实际发布状态。','5–13 秒：三项有证据的交付。','13–20 秒：未解决项与影响。','20–27 秒：下一阶段任务和周报入口。'],
+    ['10:00：汇总记录，分开测试网与主网。','16:00：复查数字来源和贡献者展示许可。','20:30：发布阶段周报线程。','22:00：补充下一阶段工作入口。'],
+    ['尚未上线就如实写未上线，不使用上线首周模板。','不将测试参与与主网空投资格挂钩。','只把确有证据的能力写成已验证。'],
+    '对比完整流程完成情况、再次参与、有效问题和独立复现；不靠粉丝数单独判断。')
+]
+
+DEFAULTS = {'白皮书': WP}
+GLOBAL_FIELDS = ['项目入口','公测入口','主网入口','教程链接','反馈入口','状态页','公测实例','支持钱包','测试币入口','奖励安排','测试报告','验收报告','发布清单']
+INCIDENT = [
+    'TAPEBIT 服务异常更新。\n影响：【事件影响】\n已知范围：【事件范围】\n当前处理：【事件处理】\n下一次更新：【下次更新时间】\n\n状态记录：\n【状态页】',
+    '当前异常期间，请先核对待完成交易与输入状态，避免重复操作。\n\n签名、广播、确认与协议执行分别追踪。后续会公开恢复结果与复盘，不以页面恢复代替全部业务验收。\n【状态页】'
+]
+
+def svg_card(d):
+    esc=html.escape
+    colors=['#77e9c1','#a8baff','#f6b778','#ffcc80']
+    color=colors[['预热','公测','主网窗口','持续运营'].index(d['phase'])]
+    shapes=''
+    for k, node in enumerate(d['nodes']):
+        x=58+k*280
+        shapes+=f'<rect x="{x}" y="307" width="244" height="128" rx="12" fill="#142129" stroke="{color}" stroke-opacity=".5"/><text x="{x+20}" y="339" fill="{color}" font-size="13" font-family="monospace">0{k+1}</text><text x="{x+20}" y="391" fill="#eef7f3" font-size="22">{esc(node)}</text>'
+        if k<3:
+            if d['id']==9:
+                shapes+=f'<text x="{x+262}" y="378" fill="{color}" text-anchor="middle" font-size="24">+</text>'
+            else:
+                shapes+=f'<path d="M{x+252} 371h20m-7-6 7 6-7 6" stroke="{color}" fill="none" stroke-width="2"/>'
+    if d['id']==5:
+        shapes=''
+        for x,label,a,depth,result in [(58,'设计 A',100,4,6400),(618,'设计 B',120,3,3240)]:
+            shapes+=f'<rect x="{x}" y="275" width="524" height="193" rx="12" fill="#142129" stroke="{color}" stroke-opacity=".5"/><text x="{x+25}" y="313" fill="{color}" font-size="16">{label} / 假设数据</text><text x="{x+25}" y="353" fill="#b5c6c2" font-size="20">面积 A = {a}　输出深度 d = {depth}</text><text x="{x+25}" y="412" fill="#eef7f3" font-size="34">C = {a} × {depth}³ = {result:,}</text><text x="{x+25}" y="447" fill="#9db2ae" font-size="16">同功能前提下的成本函数示例</text>'
+    if d['id']==11:
+        shapes=f'<rect x="58" y="326" width="230" height="90" rx="12" fill="#142129" stroke="{color}"/><text x="173" y="378" text-anchor="middle" fill="#eef7f3" font-size="22">同一合法输入</text><path d="M288 371h55V303h65m-65 68v68h65M710 303h55v68h75M710 439h55v-68" fill="none" stroke="{color}" stroke-width="2"/>'
+        for y,label,out in [(269,'参考电路','输出 a'),(405,'候选电路','输出 b')]:
+            shapes+=f'<rect x="408" y="{y}" width="302" height="68" rx="10" fill="#142129" stroke="{color}" stroke-opacity=".6"/><text x="433" y="{y+43}" fill="#eef7f3" font-size="21">{label}</text><text x="680" y="{y+43}" fill="#9db2ae" font-size="18" text-anchor="end">{out}</text>'
+        shapes+='<rect x="840" y="326" width="302" height="90" rx="12" fill="#302319" stroke="#f6b778"/><text x="991" y="365" text-anchor="middle" fill="#f6b778" font-size="22">比较 a 与 b</text><text x="991" y="394" text-anchor="middle" fill="#b7c9c2" font-size="16">不同输出可构成反例</text>'
+    if d['id']==12:
+        shapes=f'<rect x="58" y="285" width="320" height="135" rx="12" fill="#142129" stroke="{color}"/><text x="218" y="335" text-anchor="middle" fill="#eef7f3" font-size="24">电路转让</text><text x="218" y="374" text-anchor="middle" fill="#9db2ae" font-size="18">原作者记录不变</text><path d="M378 352h58v-63h55m-55 63v63h55" stroke="{color}" stroke-width="2" fill="none"/>'
+        for y,label,sub in [(255,'控制权移交新持有人','包含容器控制与未领取奖励'),(381,'已领取代币留在原钱包','不随电路转让')]:
+            shapes+=f'<rect x="491" y="{y}" width="651" height="94" rx="10" fill="#142129" stroke="{color}" stroke-opacity=".5"/><text x="515" y="{y+37}" fill="#eef7f3" font-size="23">{label}</text><text x="515" y="{y+70}" fill="#9db2ae" font-size="18">{sub}</text>'
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="D{d['id']:02} {esc(d['title'])}">
+<defs><pattern id="g" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M 36 0 L 0 0 0 36" fill="none" stroke="#91b5a4" stroke-opacity=".08"/></pattern></defs>
+<rect width="1200" height="675" fill="#0b151b"/><rect width="1200" height="675" fill="url(#g)"/>
+<g font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">
+<rect x="58" y="54" width="30" height="30" rx="5" fill="{color}"/><path d="M65 62h16v14H65zM69 58v4m8-4v4m-8 14v5m8-5v5M61 66h4m-4 7h4m16-7h5m-5 7h5" stroke="#0b151b" stroke-width="2" fill="none"/>
+<text x="102" y="77" font-size="20" letter-spacing="4" fill="#eef7f3">TAPEBIT</text><text x="1125" y="77" text-anchor="end" font-family="monospace" font-size="16" fill="{color}">D{d['id']:02} / {esc(d['phase'])}</text>
+<text x="58" y="173" font-size="42" font-weight="700" fill="#eef7f3">{esc(d['title'])}</text>
+<text x="58" y="221" font-size="22" fill="#9db2ae">{esc(d['hook'])}</text>
+{shapes}
+<path d="M58 500h1084" stroke="#354941"/><text x="58" y="545" font-size="18" fill="{color}">{esc(d['caption'])}</text>
+<text x="58" y="619" font-size="15" fill="#9db2ae">机制示意 / 非产品运行截图 · Inspired by TapeOut. Independent project.</text>
+</g></svg>'''
+
+PAYLOAD = dict(days=DAYS, defaults=DEFAULTS, globalFields=GLOBAL_FIELDS, incident=INCIDENT,
+               svgs={str(d['id']): svg_card(d) for d in DAYS})
+
+TEMPLATE = r'''<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark"><title>TAPEBIT · 15 天匿名开发者发布日历</title>
+<style>
+:root{--bg:#0a1117;--panel:#101c24;--line:#26383f;--text:#e5eeeb;--muted:#9ab0b4;--mint:#8ce8bf;--gold:#f8bc79;--blue:#adbdff}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.75 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}button,input,select,textarea{font:inherit}button,a,input,select,summary,textarea{outline-offset:5px}a{color:var(--mint);text-decoration:none}a:hover{text-decoration:underline}button{cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:8px 13px;background:#182a33;color:var(--text)}button:hover{border-color:var(--mint)}button:disabled{cursor:not-allowed;opacity:.42}button.primary{background:var(--mint);color:#0a1b15;border:0;font-weight:700}button.small{padding:4px 10px;font-size:12px}.shell{max-width:1520px;margin:auto;display:grid;grid-template-columns:254px minmax(0,1fr);gap:46px;padding:30px 42px}.sidebar{position:sticky;top:24px;height:calc(100vh - 48px);overflow:auto;padding:8px 12px 20px 0}.wordmark{letter-spacing:.18em;font-size:17px;font-weight:800;display:flex;align-items:center;gap:10px}.chip{color:var(--mint);font-family:monospace;font-size:28px}.sidebar .subtitle{color:var(--muted);font-size:12px;margin:4px 0 22px 35px}.navday{display:flex;gap:11px;align-items:center;color:var(--muted);padding:7px 8px;border-left:1px solid var(--line);font-size:12px}.navday:hover,.navday.active{color:var(--mint);background:#14271f;text-decoration:none;border-left-color:var(--mint)}.navday span:first-child{font:11px monospace;min-width:30px}.navphase{font-size:10px;letter-spacing:.12em;color:#6e9196;margin:15px 8px 6px}.sidebottom{margin-top:22px;padding:16px 10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}main{min-width:0}.eyebrow{color:var(--mint);font:11px/1.5 monospace;letter-spacing:.13em;margin:12px 0 18px}.hero{padding:12px 0 34px;border-bottom:1px solid var(--line)}h1{font-size:clamp(30px,4vw,54px);line-height:1.25;letter-spacing:-.035em;margin:0 0 20px;max-width:780px}h1 em{color:var(--mint);font-style:normal}.lede{max-width:770px;color:var(--muted);font-size:16px}.badges,.actions{display:flex;gap:8px;flex-wrap:wrap}.badge{border:1px solid var(--line);border-radius:30px;padding:4px 10px;font-size:11px;color:var(--muted)}.stats{display:grid;grid-template-columns:repeat(4,1fr);margin:24px 0 12px;gap:10px}.stat{background:var(--panel);padding:16px 18px;border:1px solid var(--line);border-radius:10px}.stat b{font:26px monospace;color:var(--mint)}.stat span{display:block;font-size:11px;color:var(--muted)}.notice{border-left:3px solid var(--gold);background:#251e18;padding:12px 16px;color:#e6ccaa;font-size:12px;margin:20px 0}.config{margin:28px 0;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:20px 24px}.config summary{font-weight:700;cursor:pointer}.config p{font-size:12px;color:var(--muted)}.settings-row{display:flex;flex-wrap:wrap;gap:16px;align-items:end;margin:18px 0}.field{display:block;font-size:12px;color:var(--muted)}input,select,textarea{border:1px solid #334950;background:#0c161d;color:var(--text);border-radius:7px;padding:9px 11px;min-width:0}input{width:100%}input[type=date]{width:170px;color-scheme:dark}input[type=checkbox]{width:auto;accent-color:var(--mint)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.fields textarea{width:100%;min-height:66px;resize:vertical;line-height:1.5;font-size:12px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:30px 0 16px;flex-wrap:wrap}.toolbar h2{font-size:22px;margin:0}.filters{display:flex;gap:6px;flex-wrap:wrap}.filter.on{border-color:var(--mint);color:var(--mint);background:#14271f}.day{border:1px solid var(--line);border-radius:14px;margin:0 0 26px;overflow:hidden;background:linear-gradient(120deg,#101d25,#0e1920)}.dayhead{padding:24px 26px;display:grid;grid-template-columns:65px 1fr auto;gap:20px;border-bottom:1px solid var(--line);align-items:center}.daynum{font:32px/1 monospace;color:var(--mint);letter-spacing:-.08em}.daynum small{display:block;color:var(--muted);font:10px/1.5 monospace;margin-top:8px;letter-spacing:0}.dayhead h3{font-size:22px;line-height:1.35;margin:5px 0 7px}.dayhead p{font-size:12px;color:var(--muted);margin:0}.phase{font-size:10px;color:var(--gold);letter-spacing:.12em}.date{font-size:11px;color:var(--muted)}.done-label{font-size:12px;white-space:nowrap;color:var(--muted)}.day.done .daynum{color:#6c8a7e}.daybody{padding:24px 26px}.columns{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:26px}.label{font-size:11px;letter-spacing:.08em;color:var(--muted);margin:0 0 12px}.slot{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}.slot strong{font-size:13px}.slot select{font-size:11px;padding:6px;max-width:190px}.gate{font-size:12px;color:var(--gold);padding:10px 12px;background:#2a2118;border:1px solid #60482a;border-radius:8px;margin:12px 0}.gate label{display:flex;gap:8px;align-items:flex-start}.tweet{border:1px solid var(--line);border-radius:9px;background:#0a151c;margin:10px 0;overflow:hidden}.tweet textarea{display:block;width:100%;border:none;border-radius:0;background:transparent;resize:vertical;min-height:150px;padding:15px;font-size:13px;line-height:1.85;overflow:auto}.tweetbar{padding:7px 11px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:6px;font:10px monospace;color:var(--muted)}.tweetbar .warn{color:var(--gold)}.tweetbar .bad{color:#ff8e8e}.threadnote{font-size:11px;color:var(--muted);margin:8px 0}.evening{margin-top:23px}.media{background:#0a151c;border:1px solid var(--line);border-radius:10px;overflow:hidden}.media svg{display:block;width:100%;height:auto}.mediafoot{padding:12px 14px;color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:12px;align-items:center}.brief{font-size:12px;color:#becfcb;margin:13px 0 17px}.storyboard{list-style:none;padding:0;counter-reset:shots;display:grid;gap:7px}.storyboard li{background:#14232b;border-left:2px solid #668d80;padding:9px 12px;font-size:12px}.section-title{font-size:13px;margin:20px 0 9px}.list{padding-left:18px;margin:10px 0;font-size:12px;color:#bed0cb}.list li{margin:7px 0}.metric{padding:12px 14px;background:#13271f;border:1px solid #2c4d3e;border-radius:8px;color:#b5d9c8;font-size:12px}.dayfields{margin:15px 0}.dayfields summary{cursor:pointer;color:var(--gold);font-size:12px}.dayfields .fields{margin-top:12px}.note{font-size:11px;color:var(--muted)}.footer{padding:28px 0 50px;color:var(--muted);font-size:12px}.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#d3f7e4;color:#10251a;border:1px solid var(--mint);padding:11px 20px;border-radius:9px;box-shadow:0 8px 35px #0009;z-index:100;max-width:90%;font-size:13px}.toast[hidden]{display:none}.hidden{display:none!important}.progress{height:4px;background:#1d3035;margin-top:14px;border-radius:3px}.progress div{height:100%;background:var(--mint);border-radius:3px}.printonly{display:none}@media(max-width:1150px){.shell{grid-template-columns:200px 1fr;padding:24px;gap:25px}.columns{grid-template-columns:1fr}.dayhead{grid-template-columns:60px 1fr}.done-label{grid-column:2}.dayhead h3{font-size:20px}}@media(max-width:700px){.shell{display:block;padding:18px 16px}.sidebar{position:static;height:auto;padding:0}.sidebar nav,.sidebottom,.sidebar .subtitle{display:none}.sidebar{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px}.hero{padding-top:0}h1{font-size:35px}.stats{grid-template-columns:repeat(2,1fr)}.fields{grid-template-columns:1fr}.config{padding:16px}.dayhead,.daybody{padding:18px}.dayhead{gap:12px}.daynum{font-size:28px}.dayhead h3{font-size:19px}.toolbar{display:block}.filters{margin-top:12px}.slot{align-items:flex-start;flex-wrap:wrap}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}@media print{body{background:white;color:#111;font-size:11px}.shell{display:block;padding:0}.sidebar,.config,.toolbar,.actions,button,.gate input,.done-label,.toast{display:none!important}.day,.day.hidden{display:block!important;break-inside:auto;background:white;border-color:#bbb}.dayhead,.daybody{padding:14px}.columns{display:block}.tweet{background:white;border-color:#aaa;break-inside:avoid}.tweet textarea{display:none}.printonly{display:block;white-space:pre-wrap;padding:12px;font-size:11px;line-height:1.6}.tweetbar{color:#555}.media{max-width:500px}.dayfields{display:none}.label,.note,.brief,.list,.dayhead p,.date,.footer,.lede{color:#333}.metric,.storyboard li,.gate{background:white;color:#222;border-color:#aaa}.stats{display:none}.daynum,.phase,h1 em,.eyebrow,a{color:#145b41}.notice{background:#fff6e5;color:#333}.storyboard{display:block}.storyboard li{margin:5px 0}}
+</style></head><body>
+<div class="shell"><aside class="sidebar"><div class="wordmark"><span class="chip">▧</span>TAPEBIT</div><div class="subtitle">PUBLIC BUILD / LAUNCH JOURNAL</div><nav id="nav" aria-label="每日时间线"></nav><div class="sidebottom">固定匿名身份<br>公开产品证据<br>自主进入公测<br><br><span id="doneCount">0 / 15 天已完成</span><div class="progress"><div id="progress" style="width:0"></div></div><br>时区 · Asia/Shanghai<br>单文件 · 无外部依赖</div></aside>
+<main><header class="hero"><div class="eyebrow">ANONYMOUS BUILDER / EDITORIAL PLAYBOOK</div><h1>15 天发布日历。<br><em>每一天，都有可发的内容。</em></h1><p class="lede">为 TAPEBIT 准备的匿名开发者账号执行稿。从产品预热、公测，到有条件的主网发布与持续运营。文案、概念图和视频分镜，按天放在一起。</p><div class="badges"><span class="badge">不含自我介绍／私信邀约</span><span class="badge">中文文案 · 普通长度线程</span><span class="badge">北京时间 · 可平移日期</span><span class="badge">不会自动发推</span></div><div class="stats"><div class="stat"><b>15</b><span>天 · D0—D14</span></div><div class="stat"><b id="postCount">—</b><span>条主线与晚间文案</span></div><div class="stat"><b>15</b><span>张 SVG 概念图可下载</span></div><div class="stat"><b>D3 / D7</b><span>公测／主网目标窗口</span></div></div><div class="notice">发布规则：把【待填项】替换成真实信息；条件性文案只有核对事实后才可复制。D3 公测与 D7 主网均是目标窗口。未就绪时选择替代稿，不把计划写成已经发生。</div><div class="actions"><button class="primary" id="exportTxt">导出当前文案 .txt</button><button id="exportState">备份编辑 .json</button><button id="importState">导入备份</button><button id="print">打印／保存 PDF</button></div><input type="file" id="importFile" accept="application/json,.json" hidden></header>
+<details class="config" open><summary>开始前 · 设定日期与通用信息</summary><p>默认 D0 为 2026-10-21，可按实际进度平移。所有排期均为北京时间；20:30 主帖、22:00 补充是起始建议，并非流量保证。公测和主网日提前核验，20:30 仅在实际就绪后发布。</p><div class="settings-row"><label class="field">D0 日期<br><input type="date" id="startDate" value="2026-10-21"></label><label class="field">筛选文字<br><input id="search" type="search" placeholder="搜索主题、文案、步骤…"></label></div><div class="fields" id="globalFields"></div><p>【白皮书】已填入 v0.6 原链接。其余未知事实保持空白。每一天还可展开专用字段。编辑会尝试保存在当前浏览器；file:// 存储行为因浏览器而异，重要改动请导出 JSON 备份。此页面不发送任何数据，也不连接钱包。</p><p>副本编辑提示：直接修改单条文案后，该条以手动稿为准，不再随通用字段自动变化；可点“恢复模板”重新绑定。发布前按 X 编辑器的实际长度与预览为准。</p></details>
+<details class="config"><summary>执行方式 · 置顶、素材与口径</summary><div class="fields"><div><h3 class="section-title">置顶与日常操作</h3><ul class="list"><li>D0 置顶项目线程；D3 开放后换成公测入口；D7 实际上线后换成正式发布。</li><li>主线按 1/n → n/n 顺序逐条回复成线程，不把整段线程粘进一条推文。22:00 补充帖独立发布；当天无新状态时可以省略状态补充。</li><li>公开技术回复只在相关话题提供具体信息，不群发、不私信邀约、不刷屏贴链接。</li><li>公测后的运营日序随实际公测平移；主网后的案例随实际发布更新，延迟期间可发不依赖上线的机制解释。</li></ul></div><div><h3 class="section-title">素材制作约定</h3><ul class="list"><li>图卡为已制作的 1200×675 SVG 机制示意，可直接点 PNG 下载用于发 X；SVG 可供编辑。X 通常不直接接受 SVG。</li><li>通用字体以打开设备实际字体为准。SVG 不含字体或外部资源；如发生文字溢出请用 PNG／设计工具调整。</li><li>视频建议 1280×720、H.264 MP4、加字幕、封面同图卡。下方分镜是制作说明，未生成或核验实际产品录像。</li><li>遮挡桌面用户名、通知、个人路径及敏感恢复资料；等待跳切必须标明，不能用动画冒充业务完成。</li></ul></div></div><div class="notice">统一口径：TAPEBIT 奖励不是 BTC；受 TapeOut 启发但属于独立项目；Bitcoin 确认与协议有效性不同；原创存证不是专利或全球原创证明；BitWeb 文件不全部永久存入 Bitcoin。TEST003 原奖励窗口已结束，公测须说明使用的实例与奖励安排。</div></details>
+<div class="toolbar"><h2>每日时间线</h2><div class="filters" role="group" aria-label="阶段筛选"><button class="small filter on" data-phase="全部">全部</button><button class="small filter" data-phase="预热">预热</button><button class="small filter" data-phase="公测">公测</button><button class="small filter" data-phase="主网窗口">主网窗口</button><button class="small filter" data-phase="持续运营">持续运营</button></div></div>
+<div id="timeline"></div>
+<details class="config" id="incident"><summary>备用 · 服务异常与延迟更新</summary><p>仅在确有事件时发布。填明影响范围、当前处理与下一次北京时间；不要将页面恢复写成所有业务已恢复。</p><div class="fields" id="incidentFields"></div><div id="incidentPosts"></div></details>
+<footer class="footer">内容依据：用户提供的项目计划与 <a href="https://github.com/redysmile/stephen-cloud/blob/main/TAPEBIT-WHITEPAPER-v0.6-zh.pdf" target="_blank" rel="noopener noreferrer">TAPEBIT 白皮书 v0.6</a>（2026-10-21）。本执行稿没有重新验收产品、确认主网部署，或核验六轮内测报告。TapeOut 官网与 X 内容未成功读取，不推断其官方关系或现行规则。<br>这是一份离线运营工作稿。文案以发布时的真实规则与状态为准。所有未知业务数据都保留为待填项；示意图不构成运行证明。</footer>
+</main></div><div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script id="payload" type="application/json">__PAYLOAD__</script><script>
+'use strict';
+const DATA=JSON.parse(document.getElementById('payload').textContent);
+const KEY='tapebit-calendar-v1';
+let state={version:1,date:'2026-10-21',values:{...DATA.defaults},custom:{},done:{},variants:{}},phase='全部',query='';
+try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved&&saved.version===1)state={...state,...saved,values:{...DATA.defaults,...saved.values}}}catch(e){}
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tokens=s=>[...new Set([...String(s).matchAll(/【([^】]+)】/g)].map(m=>m[1]))];
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){notify('浏览器无法保存本地编辑，请导出 JSON 备份。')}}
+let toastTimer;function notify(t){$('#toast').textContent=t;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,3300)}
+function dateAt(n){const d=new Date(state.date+'T12:00:00+08:00');d.setUTCDate(d.getUTCDate()+n);return new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(d).replaceAll('/','-')}
+function fill(t){return t.replace(/【([^】]+)】/g,(m,k)=>k==='公测日期'?dateAt(3)+'（目标）':k==='主网日期'?dateAt(7)+'（目标）':state.values[k]?.trim()||m)}
+// X uses weighted length: CJK generally counts as two; URLs count as 23.
+// This estimate handles these copy drafts; final editor validation remains authoritative.
+function weight(t){t=t.replace(/https?:\/\/[^\s<>]+/g,'x'.repeat(23));let n=0;for(const c of t){const p=c.codePointAt(0);n+=(p<=0x10ff||(p>=0x2000&&p<=0x200d)||(p>=0x2010&&p<=0x201f)||(p>=0x2032&&p<=0x2037))?1:2}return n}
+function textFor(id,source){return Object.hasOwn(state.custom,id)?state.custom[id]:fill(source)}
+function storeText(id,v){state.custom[id]=v;persist()}
+function field(k){return `<label class="field">${esc(k)}<textarea rows="2" data-field="${esc(k)}" placeholder="填写真实信息；留空保留【待填项】">${esc(state.values[k]||'')}</textarea></label>`}
+function sourcesFor(d,variant){return variant==='fallback'&&d.fallback?d.fallback:d.posts}
+function eveningSource(d,variant){return variant==='fallback'&&d.fallback?'TAPEBIT 当前进度与已知问题：\n【状态页】\n\n后续按实际验证结果更新。目标日期不等于已经上线，未完成的验收与发布安排会继续公开说明。':d.evening}
+function tweetHTML(id,source,gate=false){const t=textFor(id,source);return `<div class="tweet" data-tweet="${id}" data-gated="${gate?'1':'0'}"><textarea aria-label="${esc(id)} 文案" spellcheck="false">${esc(t)}</textarea><div class="printonly">${esc(t)}</div><div class="tweetbar"><span class="count"></span><span><button class="small reset" type="button">恢复模板</button> <button class="small copy" type="button">复制此条</button></span></div></div>`}
+function buildDay(d){const variant=state.variants[d.id]||'normal',normal=variant==='normal',posts=sourcesFor(d,variant),special=[...new Set(tokens([...d.posts,d.evening,...(d.fallback||[])].join('\n')))].filter(k=>!DATA.globalFields.includes(k)&&!['白皮书','公测日期','主网日期'].includes(k));
+return `<article class="day ${state.done[d.id]?'done':''}" id="day-${d.id}" data-day="${d.id}"><header class="dayhead"><div class="daynum">D${String(d.id).padStart(2,'0')}<small>${d.id===0?'START':d.id===3?'TESTNET':d.id===7?'TARGET':'BUILD'}</small></div><div><div class="phase">${esc(d.phase)} <span class="date">/ ${dateAt(d.id)}</span></div><h3>${esc(d.title)}</h3><p>${esc(d.goal)}</p></div><label class="done-label"><input type="checkbox" class="donebox" ${state.done[d.id]?'checked':''}> 当天已执行</label></header><div class="daybody"><div class="columns"><section><div class="slot"><strong>20:30 · 主线线程</strong>${d.fallback?`<select class="variant" aria-label="D${d.id} 文案版本"><option value="normal" ${normal?'selected':''}>主线稿 · 核对条件后用</option><option value="fallback" ${!normal?'selected':''}>${[3,6,7].includes(d.id)?'延期／未就绪稿':'尚无证据时的替代稿'}</option></select>`:''}</div>${d.gate&&normal?`<div class="gate"><label><input type="checkbox" class="gatebox"> <span>发布条件：${esc(d.gate)}<br>核对后勾选。本勾选仅对本次打开有效。</span></label></div>`:''}<div class="posts">${posts.map((p,i)=>tweetHTML(`${d.id}-${variant}-${i}`,p,!!d.gate&&normal)).join('')}</div><p class="threadnote">每条分别复制，按编号连续回复成线程。文字可直接编辑；【待填项】未替换时不可复制。长度显示为估算。</p><div class="evening"><div class="slot"><strong>22:00 · 补充帖</strong><span class="note">独立发布</span></div>${tweetHTML(`${d.id}-${variant}-evening`,eveningSource(d,variant),!!d.gate&&normal)}</div>${special.length?`<details class="dayfields"><summary>填写当天专用信息（${special.length} 项；按所选稿件填写）</summary><div class="fields">${special.map(field).join('')}</div></details>`:''}</section><section><div class="label">配图 / CONCEPT CARD</div><div class="media">${DATA.svgs[d.id]}<div class="mediafoot"><span>1200 × 675 · SVG<br>PNG 可用于发 X</span><span><button class="small png-download">PNG</button> <button class="small svg-download">SVG</button></span></div></div><p class="brief">${esc(d.art)}</p><h4 class="section-title">动画／录屏分镜</h4><ol class="storyboard">${d.shots.map(s=>`<li>${esc(s)}</li>`).join('')}</ol><h4 class="section-title">当天执行顺序</h4><ul class="list">${d.tasks.map(s=>`<li>${esc(s)}</li>`).join('')}</ul><h4 class="section-title">发布前核对</h4><ul class="list">${d.checks.map(s=>`<li>${esc(s)}</li>`).join('')}</ul><div class="metric"><strong>观察什么</strong><br>${esc(d.metric)}</div></section></div></div></article>`}
+let registry={};
+function register(){registry={};for(const d of DATA.days){const v=state.variants[d.id]||'normal';sourcesFor(d,v).forEach((s,i)=>registry[`${d.id}-${v}-${i}`]=s);registry[`${d.id}-${v}-evening`]=eveningSource(d,v)}DATA.incident.forEach((s,i)=>registry[`incident-${i}`]=s)}
+function render(){register();$('#startDate').value=state.date;$('#globalFields').innerHTML=['白皮书',...DATA.globalFields].map(field).join('');$('#timeline').innerHTML=DATA.days.map(buildDay).join('');$('#incidentFields').innerHTML=[...new Set(tokens(DATA.incident.join('\n')))].filter(k=>!DATA.globalFields.includes(k)).map(field).join('');$('#incidentPosts').innerHTML=DATA.incident.map((p,i)=>tweetHTML(`incident-${i}`,p)).join('');let old='';$('#nav').innerHTML=DATA.days.map(d=>{let h='';if(d.phase!==old){old=d.phase;h=`<div class="navphase">${esc(old)}</div>`}return h+`<a class="navday" href="#day-${d.id}" data-nav="${d.id}"><span>D${String(d.id).padStart(2,'0')}</span><span>${esc(d.title)}</span></a>`}).join('');$('#postCount').textContent=DATA.days.reduce((n,d)=>n+d.posts.length+1,0);document.querySelectorAll('.tweet').forEach(updateTweet);updateDone();filter();observe()}
+function updateTweet(el){const ta=el.querySelector('textarea');ta.style.height='auto';ta.style.height=Math.max(150,ta.scrollHeight+2)+'px';const t=ta.value,n=weight(t),missing=tokens(t),gate=el.dataset.gated==='1'&&!el.closest('.day')?.querySelector('.gatebox')?.checked;el.querySelector('.count').innerHTML=`<span class="${n>280?'bad':missing.length?'warn':''}">${n} / 280 估算${missing.length?' · 待填 '+missing.length+' 项':''}${gate?' · 待核对':''}</span>`;el.querySelector('.copy').disabled=missing.length>0||n>280||gate;el.querySelector('.printonly').textContent=t}
+function updateDone(){const n=DATA.days.filter(d=>state.done[d.id]).length;$('#doneCount').textContent=n+' / 15 天已完成';$('#progress').style.width=(n/15*100)+'%'}
+function filter(){document.querySelectorAll('.day').forEach(el=>{const d=DATA.days[Number(el.dataset.day)];const hit=(!query||(el.textContent+' '+[...el.querySelectorAll('textarea')].map(x=>x.value).join(' ')).toLowerCase().includes(query));el.classList.toggle('hidden',(phase!=='全部'&&d.phase!==phase)||!hit)})}
+let observer;function observe(){observer?.disconnect();observer=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){document.querySelectorAll('.navday').forEach(n=>n.classList.toggle('active',n.dataset.nav===e.target.dataset.day))}})},{rootMargin:'-5% 0px -75% 0px'});document.querySelectorAll('.day').forEach(el=>observer.observe(el))}
+function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+async function downloadPNG(id){const url=URL.createObjectURL(new Blob([DATA.svgs[id]],{type:'image/svg+xml;charset=utf-8'}));try{const img=new Image();await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url});const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=675;canvas.getContext('2d').drawImage(img,0,0);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw Error('png');const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=`tapebit-d${String(id).padStart(2,'0')}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}catch(e){notify('PNG 转换未完成，可先下载 SVG 后转图。')}finally{URL.revokeObjectURL(url)}}
+async function copy(t){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t)}else{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.top='0';a.style.opacity='0';document.body.append(a);a.focus();a.select();const ok=document.execCommand('copy');a.remove();if(!ok)throw Error('copy')}notify('已复制此条；按线程编号分别发布。')}catch(e){notify('浏览器限制剪贴板，请选中文案手动复制。')}}
+document.addEventListener('input',e=>{const el=e.target;if(el.matches('[data-field]')){state.values[el.dataset.field]=el.value;document.querySelectorAll('[data-field]').forEach(other=>{if(other!==el&&other.dataset.field===el.dataset.field)other.value=el.value});document.querySelectorAll('.tweet').forEach(card=>{const id=card.dataset.tweet;if(!Object.hasOwn(state.custom,id))card.querySelector('textarea').value=fill(registry[id]);updateTweet(card)});persist()}else if(el.matches('.tweet textarea')){const card=el.closest('.tweet');storeText(card.dataset.tweet,el.value);updateTweet(card)}else if(el.id==='search'){query=el.value.trim().toLowerCase();filter()}});
+document.addEventListener('change',e=>{const el=e.target;if(el.id==='startDate'){if(!/^\d{4}-\d{2}-\d{2}$/.test(el.value))return;state.date=el.value;persist();render()}if(el.matches('.variant')){const id=el.closest('.day').dataset.day;state.variants[id]=el.value;persist();render();document.getElementById('day-'+id).scrollIntoView({block:'start'})}if(el.matches('.gatebox'))el.closest('.day').querySelectorAll('.tweet').forEach(updateTweet);if(el.matches('.donebox')){const d=el.closest('.day');state.done[d.dataset.day]=el.checked;d.classList.toggle('done',el.checked);persist();updateDone()}});
+document.addEventListener('click',e=>{const nav=e.target.closest('.navday');if(nav){phase='全部';query='';$('#search').value='';document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('on',x.dataset.phase==='全部'));filter()}const b=e.target.closest('button');if(!b)return;if(b.matches('.copy'))copy(b.closest('.tweet').querySelector('textarea').value);if(b.matches('.reset')){const card=b.closest('.tweet'),id=card.dataset.tweet;delete state.custom[id];card.querySelector('textarea').value=fill(registry[id]);updateTweet(card);persist();notify('已恢复模板，并重新使用通用字段。')}if(b.matches('.png-download')){const id=b.closest('.day').dataset.day;downloadPNG(id)}if(b.matches('.svg-download')){const id=b.closest('.day').dataset.day;download(`tapebit-d${String(id).padStart(2,'0')}.svg`,DATA.svgs[id],'image/svg+xml;charset=utf-8')}if(b.matches('[data-phase]')){phase=b.dataset.phase;document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('on',x===b));filter()}});
+$('#exportTxt').onclick=()=>{let lines=['TAPEBIT 15 天发布日历','北京时间 · 目标日期不等于实际上线','【待填项】与发布条件必须核对；本导出不会自动发布。',''];for(const d of DATA.days){const v=state.variants[d.id]||'normal';lines.push(`D${d.id} | ${dateAt(d.id)} | ${d.title}`,`当前稿件：${v==='normal'?'主线稿':'替代稿'}`,d.gate&&v==='normal'?'发布条件：'+d.gate:'','20:30 主线程');sourcesFor(d,v).forEach((p,i)=>lines.push(textFor(`${d.id}-${v}-${i}`,p),'---'));lines.push('22:00 补充',textFor(`${d.id}-${v}-evening`,eveningSource(d,v)),'配图说明：'+d.art,'动画分镜：',...d.shots,'当天执行：',...d.tasks,'发布前核对：',...d.checks,'观察：'+d.metric,'\n')}download('TAPEBIT-15天当前文案.txt',lines.join('\n'),'text/plain;charset=utf-8');notify('已导出工作稿；其中的待填项与发布条件仍须核对。')};
+$('#exportState').onclick=()=>download('TAPEBIT-编辑备份.json',JSON.stringify(state,null,2),'application/json;charset=utf-8');$('#importState').onclick=()=>$('#importFile').click();$('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>2000000)throw Error('size');const s=JSON.parse(await f.text());if(s.version!==1||!/^\d{4}-\d{2}-\d{2}$/.test(s.date)||!s.values||typeof s.values!=='object')throw Error('schema');for(const key of ['values','custom'])for(const v of Object.values(s[key]||{}))if(typeof v!=='string')throw Error('type');state={version:1,date:s.date,values:{...DATA.defaults,...s.values},custom:s.custom||{},done:s.done||{},variants:s.variants||{}};persist();render();notify('已导入编辑；条件性发布需要重新核对。')}catch(err){notify('文件格式不符合本日历的 JSON 备份。')}e.target.value=''};
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>document.querySelectorAll('.day:not(.hidden) .tweet').forEach(updateTweet),100)});
+$('#print').onclick=()=>window.print();render();
+window.TAPEBIT_CALENDAR={data:DATA,weight,fill,textFor,getState:()=>state};
+</script></body></html>'''
+
+def main():
+    data=json.dumps(PAYLOAD,ensure_ascii=False).replace('</','<\\/')
+    (ROOT/'TAPEBIT-15天发推时间线.html').write_text(TEMPLATE.replace('__PAYLOAD__',data),encoding='utf-8')
+    (ROOT/'content.json').write_text(json.dumps(PAYLOAD,ensure_ascii=False,indent=2),encoding='utf-8')
+    assets=ROOT/'concept-cards'
+    assets.mkdir(exist_ok=True)
+    for d in DAYS:
+        (assets/f"tapebit-d{d['id']:02}.svg").write_text(svg_card(d),encoding='utf-8')
+    readme='''# TAPEBIT 15 天发推时间线
+
+双击打开 `TAPEBIT-15天发推时间线.html`。无需联网、安装依赖或启动服务。
+
+1. 设置 D0 日期（默认 2026-10-21），所有时间为北京时间。
+2. 填写通用链接与当天专用字段。未知事实保留为【待填项】。
+3. 选择主线或替代稿。条件性文案须核对事实后勾选，才可复制。
+4. 主线程按编号逐条发布。晚间补充帖独立发布；没有新状态时可省略。
+5. 下载 PNG 概念图用于发 X，SVG 可供编辑。实际产品录屏按分镜自行录制，等待剪辑须标注。
+6. 页面会尝试本地保存；请导出 JSON 备份。打印可另存 PDF；TXT 为编辑工作稿，不代表可直接发布。
+
+包含：15 天主线、晚间补充、延期/未就绪替代稿、服务异常模板、15 张概念图和动画分镜。
+配图均标注为机制示意，不构成产品或主网运行证据。没有生成产品录像。
+字符数为加权估算，最终以 X 编辑器为准。发布前须按真实状态更新费用、规则与数据。
+没有自动发布功能，不需要钱包或 X 登录，也不会向外发送数据。
+
+依据为项目计划及 TAPEBIT 白皮书 v0.6（2026-10-21），不是新增产品验收。
+TEST003 原奖励窗口已结束；新公测须公布实际实例与奖励安排。
+主网目标为 D7，必须先满足实际验收与发布条件。
+
+`content.json` 为可编辑内容源，`build.py` 可用 Python 3 重新生成网页和 SVG。
+'''
+    (ROOT/'使用说明.md').write_text(readme,encoding='utf-8')
+    copy=['# TAPEBIT · 15 天发推全稿',
+          'D0 默认 2026-10-21，时间均为北京时间；可以按实际进度平移。',
+          '【待填项】必须替换为真实信息；条件性公告需满足发布条件。每条主帖按编号回复成线程。',
+          '文案依据白皮书 v0.6，发布前按最新规则与真实状态核对。动画为分镜，未生成实际产品录像。']
+    for d in DAYS:
+        copy += [f"\n## D{d['id']} · {d['phase']} · {d['title']}",d['goal'],'\n### 20:30 主线线程']
+        if d.get('gate'):
+            copy += ['发布条件：'+d['gate']]
+        for text in d['posts']:
+            copy += ['\n```text',text.replace('【白皮书】',WP),'```']
+        copy += ['\n### 22:00 补充帖','```text',d['evening'].replace('【白皮书】',WP),'```']
+        if d.get('fallback'):
+            copy += ['\n### 条件不满足时的替代稿']
+            for text in d['fallback']:
+                copy += ['```text',text.replace('【白皮书】',WP),'```']
+            copy += ['替代稿对应的晚间补充：','```text','TAPEBIT 当前进度与已知问题：\n【状态页】\n\n后续按实际验证结果更新。目标日期不等于已经上线，未完成的验收与发布安排会继续公开说明。','```']
+        copy += ['\n### 配图',d['art'],f"素材：concept-cards/tapebit-d{d['id']:02}.png（SVG 可编辑版同目录）",'\n### 动画／录屏分镜']
+        copy += ['- '+s for s in d['shots']]
+        copy += ['\n### 执行顺序']+['- '+s for s in d['tasks']]
+        copy += ['\n### 发布前核对']+['- '+s for s in d['checks']]
+        copy += ['\n观察：'+d['metric']]
+    copy += ['\n## 备用 · 服务异常']
+    for text in INCIDENT:
+        copy += ['```text',text,'```']
+    (ROOT/'文案全稿.md').write_text('\n'.join(copy)+'\n',encoding='utf-8')
+    print(f'Built {len(DAYS)} days, {sum(len(d["posts"])+1 for d in DAYS)} primary/evening posts, {len(list(assets.glob("*.svg")))} SVG cards.')
+
+if __name__=='__main__':
+    main()

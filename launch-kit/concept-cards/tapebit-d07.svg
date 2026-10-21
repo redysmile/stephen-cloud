@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="D07 主网发布，给出事实">
+<defs><pattern id="g" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M 36 0 L 0 0 0 36" fill="none" stroke="#91b5a4" stroke-opacity=".08"/></pattern></defs>
+<rect width="1200" height="675" fill="#0b151b"/><rect width="1200" height="675" fill="url(#g)"/>
+<g font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">
+<rect x="58" y="54" width="30" height="30" rx="5" fill="#f6b778"/><path d="M65 62h16v14H65zM69 58v4m8-4v4m-8 14v5m8-5v5M61 66h4m-4 7h4m16-7h5m-5 7h5" stroke="#0b151b" stroke-width="2" fill="none"/>
+<text x="102" y="77" font-size="20" letter-spacing="4" fill="#eef7f3">TAPEBIT</text><text x="1125" y="77" text-anchor="end" font-family="monospace" font-size="16" fill="#f6b778">D07 / 主网窗口</text>
+<text x="58" y="173" font-size="42" font-weight="700" fill="#eef7f3">主网发布，给出事实</text>
+<text x="58" y="221" font-size="22" fill="#9db2ae">发布记录先于口号。</text>
+<rect x="58" y="307" width="244" height="128" rx="12" fill="#142129" stroke="#f6b778" stroke-opacity=".5"/><text x="78" y="339" fill="#f6b778" font-size="13" font-family="monospace">01</text><text x="78" y="391" fill="#eef7f3" font-size="22">主网创世</text><path d="M310 371h20m-7-6 7 6-7 6" stroke="#f6b778" fill="none" stroke-width="2"/><rect x="338" y="307" width="244" height="128" rx="12" fill="#142129" stroke="#f6b778" stroke-opacity=".5"/><text x="358" y="339" fill="#f6b778" font-size="13" font-family="monospace">02</text><text x="358" y="391" fill="#eef7f3" font-size="22">冻结规则</text><path d="M590 371h20m-7-6 7 6-7 6" stroke="#f6b778" fill="none" stroke-width="2"/><rect x="618" y="307" width="244" height="128" rx="12" fill="#142129" stroke="#f6b778" stroke-opacity=".5"/><text x="638" y="339" fill="#f6b778" font-size="13" font-family="monospace">03</text><text x="638" y="391" fill="#eef7f3" font-size="22">正式入口</text><path d="M870 371h20m-7-6 7 6-7 6" stroke="#f6b778" fill="none" stroke-width="2"/><rect x="898" y="307" width="244" height="128" rx="12" fill="#142129" stroke="#f6b778" stroke-opacity=".5"/><text x="918" y="339" fill="#f6b778" font-size="13" font-family="monospace">04</text><text x="918" y="391" fill="#eef7f3" font-size="22">可核验状态</text>
+<path d="M58 500h1084" stroke="#354941"/><text x="58" y="545" font-size="18" fill="#f6b778">MAINNET RELEASE · 仅在实际部署并核验后发布</text>
+<text x="58" y="619" font-size="15" fill="#9db2ae">机制示意 / 非产品运行截图 · Inspired by TapeOut. Independent project.</text>
+</g></svg>

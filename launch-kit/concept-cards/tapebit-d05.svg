@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="D05 一题，两种设计">
+<defs><pattern id="g" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M 36 0 L 0 0 0 36" fill="none" stroke="#91b5a4" stroke-opacity=".08"/></pattern></defs>
+<rect width="1200" height="675" fill="#0b151b"/><rect width="1200" height="675" fill="url(#g)"/>
+<g font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">
+<rect x="58" y="54" width="30" height="30" rx="5" fill="#a8baff"/><path d="M65 62h16v14H65zM69 58v4m8-4v4m-8 14v5m8-5v5M61 66h4m-4 7h4m16-7h5m-5 7h5" stroke="#0b151b" stroke-width="2" fill="none"/>
+<text x="102" y="77" font-size="20" letter-spacing="4" fill="#eef7f3">TAPEBIT</text><text x="1125" y="77" text-anchor="end" font-family="monospace" font-size="16" fill="#a8baff">D05 / 公测</text>
+<text x="58" y="173" font-size="42" font-weight="700" fill="#eef7f3">一题，两种设计</text>
+<text x="58" y="221" font-size="22" fill="#9db2ae">门更少，成本就一定更低吗？</text>
+<rect x="58" y="275" width="524" height="193" rx="12" fill="#142129" stroke="#a8baff" stroke-opacity=".5"/><text x="83" y="313" fill="#a8baff" font-size="16">设计 A / 假设数据</text><text x="83" y="353" fill="#b5c6c2" font-size="20">面积 A = 100　输出深度 d = 4</text><text x="83" y="412" fill="#eef7f3" font-size="34">C = 100 × 4³ = 6,400</text><text x="83" y="447" fill="#9db2ae" font-size="16">同功能前提下的成本函数示例</text><rect x="618" y="275" width="524" height="193" rx="12" fill="#142129" stroke="#a8baff" stroke-opacity=".5"/><text x="643" y="313" fill="#a8baff" font-size="16">设计 B / 假设数据</text><text x="643" y="353" fill="#b5c6c2" font-size="20">面积 A = 120　输出深度 d = 3</text><text x="643" y="412" fill="#eef7f3" font-size="34">C = 120 × 3³ = 3,240</text><text x="643" y="447" fill="#9db2ae" font-size="16">同功能前提下的成本函数示例</text>
+<path d="M58 500h1084" stroke="#354941"/><text x="58" y="545" font-size="18" fill="#a8baff">FORMULA EXAMPLE · 假设数字，不是成绩或收益</text>
+<text x="58" y="619" font-size="15" fill="#9db2ae">机制示意 / 非产品运行截图 · Inspired by TapeOut. Independent project.</text>
+</g></svg>

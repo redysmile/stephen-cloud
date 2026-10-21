@@ -1,0 +1,26 @@
+{
+  "days": 15,
+  "main_and_evening_posts": 62,
+  "alternative_and_incident_posts": 12,
+  "png_exports": 15,
+  "desktop_width": 1440,
+  "mobile_width": 390,
+  "page_errors": [],
+  "external_requests": 0,
+  "length_max_bounded_fields": 182,
+  "checks": [
+    "copy gates",
+    "placeholder guard",
+    "length guard",
+    "template reset",
+    "manual edits",
+    "delay evening copy",
+    "date shifting",
+    "local persistence",
+    "phase/search filters",
+    "text and JSON exports",
+    "JSON import",
+    "offline PNG downloads",
+    "mobile overflow"
+  ]
+}

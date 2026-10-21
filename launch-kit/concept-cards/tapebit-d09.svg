@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="D09 签名前，把费用看清楚">
+<defs><pattern id="g" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M 36 0 L 0 0 0 36" fill="none" stroke="#91b5a4" stroke-opacity=".08"/></pattern></defs>
+<rect width="1200" height="675" fill="#0b151b"/><rect width="1200" height="675" fill="url(#g)"/>
+<g font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">
+<rect x="58" y="54" width="30" height="30" rx="5" fill="#ffcc80"/><path d="M65 62h16v14H65zM69 58v4m8-4v4m-8 14v5m8-5v5M61 66h4m-4 7h4m16-7h5m-5 7h5" stroke="#0b151b" stroke-width="2" fill="none"/>
+<text x="102" y="77" font-size="20" letter-spacing="4" fill="#eef7f3">TAPEBIT</text><text x="1125" y="77" text-anchor="end" font-family="monospace" font-size="16" fill="#ffcc80">D09 / 持续运营</text>
+<text x="58" y="173" font-size="42" font-weight="700" fill="#eef7f3">签名前，把费用看清楚</text>
+<text x="58" y="221" font-size="22" fill="#9db2ae">资源款、协议费、载体和矿工费，各是什么？</text>
+<rect x="58" y="307" width="244" height="128" rx="12" fill="#142129" stroke="#ffcc80" stroke-opacity=".5"/><text x="78" y="339" fill="#ffcc80" font-size="13" font-family="monospace">01</text><text x="78" y="391" fill="#eef7f3" font-size="22">资源本金</text><text x="320" y="378" fill="#ffcc80" text-anchor="middle" font-size="24">+</text><rect x="338" y="307" width="244" height="128" rx="12" fill="#142129" stroke="#ffcc80" stroke-opacity=".5"/><text x="358" y="339" fill="#ffcc80" font-size="13" font-family="monospace">02</text><text x="358" y="391" fill="#eef7f3" font-size="22">协议费用</text><text x="600" y="378" fill="#ffcc80" text-anchor="middle" font-size="24">+</text><rect x="618" y="307" width="244" height="128" rx="12" fill="#142129" stroke="#ffcc80" stroke-opacity=".5"/><text x="638" y="339" fill="#ffcc80" font-size="13" font-family="monospace">03</text><text x="638" y="391" fill="#eef7f3" font-size="22">载体金额</text><text x="880" y="378" fill="#ffcc80" text-anchor="middle" font-size="24">+</text><rect x="898" y="307" width="244" height="128" rx="12" fill="#142129" stroke="#ffcc80" stroke-opacity=".5"/><text x="918" y="339" fill="#ffcc80" font-size="13" font-family="monospace">04</text><text x="918" y="391" fill="#eef7f3" font-size="22">矿工费用</text>
+<path d="M58 500h1084" stroke="#354941"/><text x="58" y="545" font-size="18" fill="#ffcc80">FEE GUIDE · 按操作、实例与签名前预览核对</text>
+<text x="58" y="619" font-size="15" fill="#9db2ae">机制示意 / 非产品运行截图 · Inspired by TapeOut. Independent project.</text>
+</g></svg>
