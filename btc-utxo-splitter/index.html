@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="BTC 主网单笔 UTXO 拆分。浏览器本地构建 PSBT，UniSat 签名，手动确认后广播。">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="no-referrer">
+  <title>BTC UTXO Splitter · TAPEBIT Tools</title>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="#"><span class="brandmark">₿</span><span>UTXO<span class="brand-thin"> / SPLITTER</span></span></a><div class="header-meta"><span class="network"><i></i> BITCOIN MAINNET</span><span class="local-tag">本地构建 · 钱包签名</span></div></header>
+  <main>
+    <section class="hero">
+      <div><div class="eyebrow">TAPEBIT TOOLS / 01</div><h1>一笔输入，<br><span>多笔可用 UTXO。</span></h1><p>将单笔普通 BTC 分成 10 笔、20 笔或自定义数量。<br class="desktop-break">扣除矿工费后均分，全部回到原地址，为后续批量交易准备。</p><div class="hero-tags"><span>无平台费</span><span>不接触私钥</span><span>签名与广播分开</span></div></div>
+      <div class="split-visual" aria-label="单笔 UTXO 拆分为多笔输出的示意图"><div class="visual-label">ONE INPUT → MULTIPLE OUTPUTS</div><div class="visual-input"><span>01 / INPUT</span><strong>0.01000000 <small>BTC</small></strong></div><div class="branch-lines"><span></span></div><div class="visual-outputs"><div>UTXO<small>01</small></div><div>UTXO<small>02</small></div><div>UTXO<small>03</small></div><div class="more">…<small>N</small></div></div><p>概念示意 · 输出总额 = 输入 − 矿工费</p></div>
+    </section>
+    <div class="asset-notice"><span class="notice-icon">!</span><p><strong>仅拆分普通 BTC。</strong> 公共区块浏览器不能识别所有铭文、Runes 或 TAPEBIT 资产。请使用专门的普通 BTC 资金地址，手动选择一笔没有协议资产、没有被待完成交易占用的 UTXO。</p></div>
+    <div id="message" class="message hidden" role="status" aria-live="polite"></div>
+    <div class="workspace">
+      <div class="controls">
+        <section class="panel" id="sourcePanel">
+          <div class="panel-title"><span class="step">01</span><div><h2>选择输入</h2><p>仅使用一笔已确认 UTXO</p></div><span class="status-pill" id="walletStatus">未连接</span></div>
+          <div class="wallet-actions"><button class="primary" id="connectBtn" type="button">连接 UniSat</button><button id="disconnectBtn" type="button" class="hidden">断开本站连接</button><button id="loadBtn" type="button">读取 UTXO</button></div>
+          <label class="field">BTC 主网地址 <input id="account" type="text" placeholder="bc1q… 或 bc1p…" spellcheck="false" autocomplete="off"></label>
+          <details class="advanced" id="manualDetails"><summary>公钥与原始交易导入 / 无钱包构建 PSBT</summary><p class="hint">UniSat 连接后自动读取公钥。不使用扩展时，可填写自己的公开地址、公钥及父交易原始 Hex。本工具没有私钥输入框。</p><label class="field">对应压缩公钥（66 位 Hex）<input id="publicKey" type="text" placeholder="02… / 03…" spellcheck="false" autocomplete="off"></label><div class="pair"><label class="field">父交易 txid<input id="parentTxid" type="text" placeholder="64 位 Hex" spellcheck="false"></label><label class="field small-field">输出序号 vout<input id="parentVout" type="number" min="0" step="1" value="0"></label></div><label class="field">父交易原始 Hex<textarea id="parentHex" rows="3" placeholder="完整的原始父交易，不是 PSBT" spellcheck="false"></textarea></label><button id="importParentBtn" type="button">核对并导入这笔 UTXO</button><p class="hint">离线导入只核对交易字节、金额及地址，无法证明未花费。UniSat 签名前和广播前仍需联网复核。</p></details>
+          <div class="utxo-heading"><strong>可选 UTXO</strong><span id="utxoCount">未读取</span></div>
+          <div id="utxoList" class="utxo-list"><div class="empty"><span>↳</span><p>连接钱包后读取，或展开原始交易导入。<br>工具不会自动选择或合并其他输入。</p></div></div>
+          <div id="sourceInfo" class="source-info hidden"></div>
+          <p class="privacy-note">读取时，地址会发送至 mempool.space；签名仅交给 UniSat。所有交易状态均以 Bitcoin 主网为准。</p>
+        </section>
+        <section class="panel">
+          <div class="panel-title"><span class="step">02</span><div><h2>设置拆分</h2><p>金额按整数 sat 计算，余数均匀分配</p></div></div>
+          <label class="field">输出数量</label><div class="preset-row"><button type="button" class="preset" data-count="10">10 笔</button><button type="button" class="preset active" data-count="20">20 笔</button><button type="button" class="preset" data-count="50">50 笔</button><label class="custom-count"><span>自定义</span><input id="count" type="number" min="2" max="200" step="1" value="20" aria-label="拆分数量"></label></div>
+          <div class="fee-heading"><label class="field" for="rate">矿工费率</label><button class="text-btn" type="button" id="feesBtn">读取推荐费率 ↗</button></div><div class="rate-wrap"><input id="rate" type="number" min="0.1" max="500" step="0.01" value="2" aria-label="矿工费率"><span>sat/vB</span></div><p class="hint" id="feeHint">当前为手动费率 2 sat/vB，不是实时推荐。手续费从输入扣除，不另设找零输出。</p>
+          <label class="check"><input type="checkbox" id="assetCheck"><span>我已确认选中的这笔 UTXO 仅含普通 BTC，没有铭文、Runes 或 TAPEBIT 等协议资产，且未被其他待完成交易占用。</span></label>
+          <button class="primary full" id="buildBtn" type="button" disabled>生成拆分预览与 PSBT <span>→</span></button>
+          <p class="hint">2–200 笔；每笔至少 1,000 sat（工具限制）。手续费不超过 100,000 sat，且不超过输入金额的 10%。支持原生 SegWit 和 BIP86 Taproot 单签。</p>
+        </section>
+      </div>
+      <aside class="preview panel">
+        <div class="preview-title"><div><div class="eyebrow">TRANSACTION PREVIEW</div><h2>拆分预览</h2></div><span class="preview-label" id="previewLabel">示例测算</span></div>
+        <div class="input-amount"><span id="amountLabel">示例输入 · Taproot</span><strong id="inputBTC">0.01000000 <small>BTC</small></strong></div>
+        <div class="summary-grid"><div><span>输出数量</span><strong id="summaryCount">20 <small>笔</small></strong></div><div><span>每笔约</span><strong id="perOutput">— <small>sat</small></strong></div><div><span>矿工费</span><strong id="summaryFee">— <small>sat</small></strong></div><div><span>保守估算体积</span><strong id="summaryVsize">— <small>vB</small></strong></div></div>
+        <div class="destination"><span>全部输出至原地址</span><code id="destination">连接钱包或导入后显示</code></div>
+        <div class="outputs-header"><span>输出明细</span><span id="outputTotal">示例 · 不生成交易</span></div><div class="output-scroll"><table><thead><tr><th>vout</th><th>金额 / BTC</th><th>金额 / sat</th></tr></thead><tbody id="outputRows"></tbody></table></div>
+        <p class="hint" id="remainderHint">扣费后均分，各输出最多相差 1 sat。预览不代表已签名、已广播或已确认。</p>
+        <div class="psbt-actions"><button id="downloadPsbtBtn" type="button" disabled>下载 PSBT</button><button id="copyPsbtBtn" type="button" disabled>复制 PSBT</button><button id="exportPlanBtn" type="button" disabled>导出计划 JSON</button></div>
+        <label class="check"><input id="reviewCheck" type="checkbox" disabled><span>我已核对原地址、输入、每笔金额与总手续费，并确认这是 BTC 主网交易。</span></label>
+        <button class="primary full" id="signBtn" type="button" disabled>交给 UniSat 签名 <span>↗</span></button><p class="hint">签名后不会自动广播。仅签名当前选中的一个输入，不请求其他输入授权。</p>
+        <details class="advanced"><summary>导入其他钱包签好的 PSBT</summary><p class="hint">先生成当前计划，再导入签名结果。本地会核对全部输入输出及 Bitcoin 签名。</p><label class="field">已签名 PSBT（Hex / Base64）<textarea id="signedInput" rows="3" spellcheck="false" placeholder="70736274ff… 或 cHNidP…"></textarea></label><div class="wallet-actions"><button type="button" id="verifySignedBtn" disabled>验证已签名 PSBT</button><label class="file-button">选择文件<input id="signedFile" type="file" accept=".psbt,.txt" hidden></label></div></details>
+      </aside>
+    </div>
+    <section class="panel signed-panel" id="signedPanel" hidden>
+      <div class="panel-title"><span class="step">03</span><div><h2>已签名，等待你决定广播</h2><p id="signedStatus">输入、输出、手续费与 Bitcoin 签名均已本地校验</p></div><span class="status-pill good" id="broadcastStatus">尚未广播</span></div>
+      <div class="signed-layout"><div><label class="field">本地计算的交易 ID<code id="signedTxid" class="txid"></code></label><div class="signed-facts" id="signedFacts"></div><div class="wallet-actions"><button type="button" id="downloadRawBtn">导出已签名交易 Hex</button><button type="button" id="exportOutputsBtn">导出 UTXO 清单</button><button type="button" id="statusBtn">查询确认状态</button></div><a id="explorerLink" class="explorer-link" target="_blank" rel="noopener noreferrer">在区块浏览器查看 ↗</a><details class="advanced"><summary>查看原始交易 Hex</summary><textarea id="rawOutput" readonly rows="4" aria-label="已签名原始交易 Hex"></textarea></details></div><div class="broadcast-box"><h3>广播至 BTC 主网</h3><p>发送前再次核对父交易已确认且输入未花费。广播后不能撤销；本工具不实现 RBF 加速，等待时间由网络决定。</p><label class="check"><input type="checkbox" id="broadcastCheck"><span>我确认将这笔已签名交易发送到 Bitcoin 主网。</span></label><button class="broadcast-button full" type="button" id="broadcastBtn" disabled>确认广播主网交易</button><p class="hint">仅点击此按钮才会通过 mempool.space 广播；拒签、导出或生成预览都不会广播。</p></div></div>
+    </section>
+    <section class="explain"><div><h3>为什么不是 10 × 0.001 BTC？</h3><p>同一笔 0.01 BTC 还要支付矿工费。因此输出总额会略小于 0.01 BTC。余数按 1 sat 分到前几笔，金额守恒且没有隐藏找零。</p></div><div><h3>拆分后何时可用于批量交易？</h3><p>广播后会生成对应输出；确认前仍属未确认 UTXO。本工具使用已确认输入，建议后续批量交易也等待拆分交易确认。</p></div><div><h3>协议资产需要单独保护</h3><p>UTXO 查询和主网确认无法证明其中没有铭文或协议资产。本工具不扫描协议资产，也不会接管 TAPEBIT 的资产载体保护。</p></div></section>
+  </main>
+  <footer><span>TAPEBIT TOOLS <span class="footer-dot">/</span> BTC UTXO SPLITTER</span><span>无平台费 · 不保存账户或交易 · 不接触私钥</span></footer>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

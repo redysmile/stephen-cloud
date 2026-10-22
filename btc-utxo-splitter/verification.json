@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-22",
+  "unit_and_provider_tests": 25,
+  "unit_and_provider_failed": 0,
+  "production_build": "passed",
+  "npm_audit": "0 vulnerabilities",
+  "browser": {
+    "passed": [
+      "p2tr wallet: build/sign/reject/reverify/broadcast/status/export/network change",
+      "p2wpkh wallet: build/sign/reject/reverify/broadcast/status/export/network change",
+      "no extension: offline parent import, signed PSBT verification, API failure, stale plan invalidation",
+      "account change while signature pending invalidates result",
+      "390px mobile layout and 10-output preset"
+    ],
+    "real_btc_spent": false,
+    "live_wallet_tested": false,
+    "api": "intercepted fixture responses only"
+  },
+  "live_api": "blocked by cloud network allowlist (HTTP 403)",
+  "real_unisat_extension_tested": false,
+  "real_btc_spent": false
+}
